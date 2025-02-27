@@ -1,31 +1,33 @@
-# Unit Testing - TDD and BDD Basics with Spring & Kotlin
+# TDD and BDD Basics with Spring & Kotlin
 
-In this guide, we'll explore both Test-Driven Development (TDD) and Behavior-Driven Development (BDD) approaches by creating a simple Spring project with Kotlin.
+In this guide, we'll explore both Test-Driven Development (TDD) and Behavior-Driven Development
+(BDD) approaches by creating a simple Spring project with Kotlin. We'll also introduce mocking
+as a crucial technique for effective testing.
 
 ## What You'll Learn
 
-- The fundamental concepts behind TDD and BDD
+- The differences between TDD and BDD approaches
 - How to implement TDD-style tests in Kotlin
-- How to implement BDD-style tests in Kotlin 
+- How to implement BDD-style tests in Kotlin
 - Creating a simple Spring Boot service and controller
+- Using mocking to isolate components for testing
 - Testing both approaches against our implementation
 
 ## Overview
 
 We'll create:
 
-1. A **`GreetingService`** that stores a local map of details
-2. A **`Greeting`** data class to hold our message and details
-3. A **TDD test** class with standard assertions
-4. A **BDD test** class with descriptive, behavior-focused naming
-5. A **`GreetingController`** to expose a `/hello` endpoint
+1. A **`GreetingService`** that provides greetings based on parameters
+2. A **`Greeting`** data class for our responses
+3. Several test classes demonstrating TDD, BDD, and mocking techniques
+4. A **`GreetingController`** to expose a `/hello` endpoint
 
 ## Project Structure
 
-Our sample Spring Boot project will have this directory structure:
-
-```plaintext
+```
 helloUniverse/
+├─ build.gradle.kts
+├─ settings.gradle.kts
 └─ src/
    ├─ main/
    │  ├─ kotlin/
@@ -34,39 +36,70 @@ helloUniverse/
    │  │     ├─ Greeting.kt
    │  │     └─ GreetingController.kt
    └─ test/
-      └─ kotlin/
-         └─ com/mentor/helloUniverse/
-            ├─ GreetingServiceTDDTest.kt
-            └─ GreetingServiceBDDTest.kt
+      ├─ kotlin/
+      │  └─ com/mentor/helloUniverse/
+      │     ├─ GreetingServiceTDDTest.kt
+      │     ├─ GreetingServiceBDDTest.kt
+      │     └─ GreetingControllerTest.kt
 ```
 
 ## TDD vs BDD: A Brief Introduction
 
 ### Test-Driven Development (TDD)
 
-TDD follows a "Red-Green-Refactor" cycle:
+TDD follows a cycle of:
 
-1. **Red**: Write a failing test
-2. **Green**: Write the minimum code to make the test pass
-3. **Refactor**: Improve the code while keeping tests passing
+1. Write a failing test
+2. Implement just enough code to make the test pass
+3. Refactor the code while keeping tests green
 
-TDD focuses on verifying that individual components work as expected from a technical perspective.
+TDD focuses on:
+- Small, incremental development steps
+- Testing technical functionality
+- Clear test outcomes (pass/fail)
+- Code design driven by testability
 
 ### Behavior-Driven Development (BDD)
 
 BDD extends TDD by:
-
-- Using human-readable language to describe tests
-- Focusing on the behavior of the system from a user's perspective
-- Often following the "Given-When-Then" format to clearly express scenarios
+- Using natural language to describe tests
+- Focusing on user-visible behavior rather than implementation
+- Encouraging collaboration between developers, QA, and non-technical stakeholders
+- Writing tests that serve as living documentation
 
 BDD tests help bridge the gap between technical implementation and business requirements.
+
+## Introduction to Mocking
+
+### What is Mocking?
+
+**Mocking** is a technique where you create substitutes (or "mocks") for real objects that your code depends on. These mock objects:
+
+- Simulate specific behaviors of real dependencies
+- Allow you to control the test environment
+- Help isolate the component you're testing
+
+### Why Use Mocks?
+
+1. **Isolation**: Test components independently without requiring their dependencies
+2. **Speed**: Tests run faster by avoiding slow external systems
+3. **Reliability**: Tests don't fail because of external system issues
+4. **Edge Case Testing**: Easily simulate rare conditions or error cases
+5. **Determinism**: Tests produce consistent results regardless of environment
+
+### Common Mocking Scenarios
+
+- External API calls
+- Database interactions
+- File system operations
+- Time-dependent functionality
+- Resources with limited availability
 
 ## Let's Build Our Project
 
 Now, let's implement our code and tests using both approaches.
 
-### 1. Create the `Greeting` Data Class
+### 1. Create the `Greeting` Class
 
 This simple data class holds our greeting message and additional details:
 
@@ -75,13 +108,13 @@ package com.mentor.helloUniverse
 
 data class Greeting(
     val message: String,
-    val details: Map<String, String>
+    val details: Map<String, String> = emptyMap()
 )
 ```
 
 ### 2. Create the `GreetingService`
 
-Our service returns a greeting with a fixed message and details:
+Our service returns personalized greetings:
 
 ```kotlin
 package com.mentor.helloUniverse
@@ -91,108 +124,37 @@ import org.springframework.stereotype.Service
 @Service
 class GreetingService {
 
-    // Local map storing additional details
+    // Additional details about our greeting
     private val details = mapOf(
         "version" to "1.0",
         "mode" to "dev"
     )
 
-    fun getGreeting(): Greeting {
+    fun getGreeting(name: String = "Universe", mood: String = "neutral"): Greeting {
+        val message = when(mood) {
+            "happy" -> "Hello, Wonderful $name!"
+            "excited" -> "Hello, Amazing $name!"
+            "relaxed" -> "Hello, Peaceful $name!"
+            else -> "Hello, $name!"
+        }
+        
         return Greeting(
-            message = "Hello, Universe",
-            details = details
+            message = message,
+            details = details + ("mood" to mood)
         )
     }
 }
 ```
 
-### 3. TDD-Style Test
+### 3. Create a Controller
 
-Traditional TDD tests focus on clear arrange-act-assert patterns:
-
-```kotlin
-package com.mentor.helloUniverse
-
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-
-class GreetingServiceTDDTest {
-
-    @Test
-    fun shouldReturnHelloUniverseWithDetails() {
-        // Arrange
-        val service = GreetingService()
-
-        // Act
-        val result = service.getGreeting()
-
-        // Assert
-        assertEquals("Hello, Universe", result.message)
-        assertEquals("1.0", result.details["version"])
-        assertEquals("dev", result.details["mode"])
-    }
-}
-```
-
-**Key TDD Characteristics:**
-- Method name describes the technical expectation
-- Follows the "Arrange, Act, Assert" pattern
-- Uses standard JUnit assertions
-- Focuses on verifying specific values
-
-### 4. BDD-Style Test
-
-BDD tests use more descriptive language and often document user scenarios:
-
-```kotlin
-package com.mentor.helloUniverse
-
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-
-class GreetingServiceBDDTest {
-
-    /*
-     Feature: Greeting
-       In order to feel welcomed by the system,
-       As a user,
-       I want to receive a friendly greeting message with additional details.
-    */
-
-    @Test
-    fun `Given a GreetingService, When the user requests a greeting, Then a "Hello, Universe" message with details is returned`() {
-        // given
-        val service = GreetingService()
-
-        // when
-        val result = service.getGreeting()
-
-        // then
-        assertThat(result.message).isEqualTo("Hello, Universe")
-        assertThat(result.details["version"]).isEqualTo("1.0")
-        assertThat(result.details["mode"]).isEqualTo("dev")
-    }
-}
-```
-
-The function name in this example is a bit verbose, and I would tend to be a little less descriptive, but this
-illustrates the functionality of a BDD test.
-
-**Key BDD Characteristics:**
-- Test name reads like a natural language sentence
-- Uses backticks to allow spaces in function names
-- Follows the "Given, When, Then" pattern from Gherkin language
-- Often includes feature descriptions from the user's perspective
-- Typically uses more fluent assertion libraries like AssertJ
-
-### 5. Create a Controller
-
-Finally, let's expose our greeting through a REST endpoint:
+Let's expose our greeting through a REST endpoint:
 
 ```kotlin
 package com.mentor.helloUniverse
 
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -200,23 +162,206 @@ class GreetingController(
     private val greetingService: GreetingService
 ) {
     @GetMapping("/hello")
-    fun hello(): Greeting {
-        return greetingService.getGreeting()
+    fun getGreeting(
+        @RequestParam(required = false, defaultValue = "Universe") name: String,
+        @RequestParam(required = false, defaultValue = "neutral") mood: String
+    ): Greeting {
+        return greetingService.getGreeting(name, mood)
     }
 }
 ```
 
-When you run your Spring Boot app and hit the `/hello` endpoint, you'll get a response like:
+## Setting Up MockK in Your Project
 
-```json
-{
-  "message": "Hello, Universe",
-  "details": {
-    "version": "1.0",
-    "mode": "dev"
-  }
+To use MockK for mocking in your tests, add these dependencies to your `build.gradle.kts` file:
+
+```kotlin
+dependencies {
+    // Existing Spring Boot dependencies...
+    
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+    
+    // For BDD-style assertions
+    testImplementation("org.assertj:assertj-core:3.25.3")
 }
 ```
+
+## TDD-Style Test with MockK
+
+Here's how we test the `GreetingController` using TDD and mocking the `GreetingService` with MockK:
+
+```kotlin
+package com.mentor.helloUniverse
+
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+
+class GreetingControllerTDDTest {
+
+    private val greetingService = mockk<GreetingService>()
+    private val controller = GreetingController(greetingService)
+    private val mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
+
+    @Test
+    fun shouldReturnGreetingFromService() {
+        // Arrange
+        val greeting = Greeting(
+            message = "Hello, Test Universe!",
+            details = mapOf("version" to "1.0", "mood" to "happy")
+        )
+        every { greetingService.getGreeting(any(), any()) } returns greeting
+
+        // Act & Assert
+        mockMvc.perform(
+            get("/hello")
+                .param("name", "Test Universe")
+                .param("mood", "happy")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.message").value("Hello, Test Universe!"))
+            .andExpect(jsonPath("$.details.version").value("1.0"))
+            .andExpect(jsonPath("$.details.mood").value("happy"))
+
+        // Verify that the service was called with the right parameters
+        verify { greetingService.getGreeting("Test Universe", "happy") }
+    }
+}
+```
+
+## BDD-Style Test with MockK
+
+BDD tests can also use MockK, but with more descriptive language:
+
+```kotlin
+package com.mentor.helloUniverse
+
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+
+class GreetingServiceBDDTest {
+
+    /*
+     Feature: Personalized Greeting
+       In order to feel welcomed appropriately,
+       As a user,
+       I want to receive a customized greeting that reflects my mood.
+    */
+
+    @Test
+    fun `Given a user is happy, When requesting a greeting, Then a happy greeting is returned`() {
+        // Given
+        val greetingService = GreetingService()
+
+        // When
+        val result = greetingService.getGreeting(name = "Universe", mood = "happy")
+
+        // Then
+        assertThat(result.message).isEqualTo("Hello, Wonderful Universe!")
+        assertThat(result.details["mood"]).isEqualTo("happy")
+    }
+
+    @Test
+    fun `Given a user is relaxed, When requesting a greeting, Then a peaceful greeting is returned`() {
+        // Given
+        val greetingService = GreetingService()
+
+        // When
+        val result = greetingService.getGreeting(name = "Universe", mood = "relaxed")
+
+        // Then
+        assertThat(result.message).isEqualTo("Hello, Peaceful Universe!")
+        assertThat(result.details["mood"]).isEqualTo("relaxed")
+    }
+}
+```
+
+## Spring Integration Test with SpringMockK
+
+For testing the complete integration with Spring's testing framework:
+
+```kotlin
+package com.mentor.helloUniverse
+
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
+import io.mockk.verify
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+
+@WebMvcTest(GreetingController::class)
+class GreetingControllerSpringTest {
+
+    @Autowired
+    lateinit var mockMvc: MockMvc
+
+    @MockkBean
+    lateinit var greetingService: GreetingService
+
+    @Test
+    fun shouldReturnGreetingFromService() {
+        // Arrange
+        val greeting = Greeting(
+            message = "Hello, Spring Universe!",
+            details = mapOf("version" to "1.0", "mood" to "excited")
+        )
+        every { greetingService.getGreeting(any(), any()) } returns greeting
+
+        // Act & Assert
+        mockMvc.perform(
+            get("/hello")
+                .param("name", "Spring Universe")
+                .param("mood", "excited")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.message").value("Hello, Spring Universe!"))
+            .andExpect(jsonPath("$.details.version").value("1.0"))
+            .andExpect(jsonPath("$.details.mood").value("excited"))
+
+        // Verify that the service was called with the right parameters
+        verify { greetingService.getGreeting("Spring Universe", "excited") }
+    }
+}
+```
+
+## The Differences Between MockK and Mockito
+
+While Mockito is the most popular Java mocking library, MockK is designed specifically for Kotlin and offers several advantages:
+
+### MockK Advantages:
+
+1. **Kotlin-first**: Designed for Kotlin with coroutine support and idiomatic syntax
+2. **Relaxed mocks**: Can create mocks without specifying every behavior
+3. **Powerful matchers**: Has a wide range of matchers for verifying method calls
+4. **DSL syntax**: Uses Kotlin's DSL features for a cleaner, more readable syntax
+
+### Key MockK Syntax:
+
+| Operation | Mockito | MockK |
+|-----------|---------|-------|
+| Create a mock | `mock(Class)` | `mockk<Class>()` |
+| Define behavior | `when(x.method()).thenReturn(value)` | `every { x.method() } returns value` |
+| Verify calls | `verify(x).method()` | `verify { x.method() }` |
+| Argument matchers | `any()` | `any()` |
+| Relaxed mocks | `mock(Class, RETURNS_DEFAULTS)` | `mockk<Class>(relaxed = true)` |
 
 ## Breaking and Fixing Tests
 
@@ -224,47 +369,51 @@ A key benefit of automated tests is detecting when changes break expected behavi
 
 1. **Change the Service**:
    ```kotlin
-   // Update the details map
-   private val details = mapOf(
-       "version" to "2.0",  // Changed from 1.0
-       "mode" to "dev"
-   )
+   // Update the GreetingService's message for happy mood
+   val message = when(mood) {
+       "happy" -> "Hello, Fantastic $name!" // Changed from "Hello, Wonderful $name!"
+       "excited" -> "Hello, Amazing $name!"
+       // ...
+   }
    ```
 
 2. **Run the Tests**:
-   Both tests will now fail because they expect version "1.0"
+   The tests expecting "Hello, Wonderful Universe!" will now fail
 
 3. **Fix the Tests**:
-   Update assertions in both test classes to expect "2.0"
+   Update the test expectations to match the new message
 
 This demonstrates how tests help catch potential regressions when code changes.
 
-## Practical TDD
+## Practical TDD with Mocking
 
-While "pure" TDD involves writing tests before implementation, many developers use a more flexible approach:
+Here's a practical approach to TDD with mocking:
 
-1. Define interfaces and class structures first
-2. Write tests to specify behavior
-3. Implement the functionality
-4. Refactor as needed
+1. **Define interfaces** for your components
+2. **Write tests** using mocks for dependencies
+3. **Implement** the component being tested
+4. **Refactor** while keeping tests passing
+5. Repeat for the next component
 
-This "partial TDD" approach maintains most benefits while fitting better into some development workflows.
+This approach ensures each component is testable in isolation.
 
 ## Key Takeaways
 
-- **TDD** focuses on verifying technical implementation
-- **BDD** emphasizes behavior from a user's perspective
-- Both approaches help ensure code reliability and catch regressions
-- Choose the style that best fits your team and project
-- Tests act as living documentation of your system's behavior
+- **TDD and BDD** provide different approaches to testing, with complementary benefits
+- **Mocking** is essential for testing components with dependencies
+- **MockK** provides a Kotlin-first approach to mocking that integrates well with Spring
+- **Isolation** through mocking makes tests more focused and reliable
+- Tests serve as **living documentation** of system behavior
+- A good test suite **catches regressions** when code changes
 
 ## Next Steps
 
 In future guides, we'll explore:
 
-1. Testing controllers with MockMvc
+1. More advanced mocking techniques
 2. Integration testing with Spring Test
-3. Mocking dependencies in tests
-4. Advanced testing patterns
+3. Testing database interactions
+4. Testing asynchronous code
+5. Advanced testing patterns
 
-[NEXT: Testing Spring Controllers](/testing/01_Beginner/04_Spring_Controllers/04_testing_controllers.md)
+[← BACK: Introduction](../01_outline.md) | [NEXT: Testing Spring Controllers →](/testing/01_Beginner/04_Spring_Controllers/04_testing_controllers.md)
