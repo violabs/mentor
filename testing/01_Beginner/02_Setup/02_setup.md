@@ -179,13 +179,10 @@ At this point, you're set up to:
 2. Use **Docker** or **Colima** for containerized services later on.
 3. Expand your environment as needed with additional dependencies or libraries.
 
-In the **next part** of this series, we'll dive deeper into **Unit Testing Essentials**—showing you how to 
-write your first Kotlin tests, structure them effectively, and set up a simple "Hello Universe" test suite to 
-confirm everything's working. That's where the *real* testing journey begins!
+In the **next part** of this series, we'll dive deeper into **TDD and BDD Basics**—showing you how both testing approaches can be applied to your Kotlin Spring Boot code. We'll explore the different philosophies and practical implementations.
 
-**Ready to dive in?** Let's start exploring the fundamentals of testing, from basic assertions to mocking, so 
-you can build confidence in every line of code you write.
+**Ready to dive in?** Let's move on to learning about test-driven and behavior-driven development!
 
 ---
 
-[← BACK: Introduction](../01_outline.md) | [NEXT: Unit Testing →](../03_Unit_Testing/03_unit_testing.md)
+[← BACK: Introduction](../01_outline.md) | [NEXT: Unit Testing →](../03_TDD_BDD/03_tdd_bdd_basics.md)
