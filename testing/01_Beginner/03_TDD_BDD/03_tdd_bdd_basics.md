@@ -1,4 +1,4 @@
-# TDD and BDD Basics with Spring & Kotlin
+# Unit Testing - TDD and BDD Basics with Spring & Kotlin
 
 In this guide, we'll explore both Test-Driven Development (TDD) and Behavior-Driven Development (BDD) approaches by creating a simple Spring project with Kotlin.
 
@@ -29,15 +29,15 @@ helloUniverse/
 └─ src/
    ├─ main/
    │  ├─ kotlin/
-   │  │  └─ com/myawesomeproject/hello_universe/
+   │  │  └─ com/mentor/helloUniverse/
    │  │     ├─ GreetingService.kt
    │  │     ├─ Greeting.kt
    │  │     └─ GreetingController.kt
    └─ test/
-      ├─ kotlin/
-      │  └─ com/myawesomeproject/hello_universe/
-      │     ├─ GreetingServiceTDDTest.kt
-      │     └─ GreetingServiceBDDTest.kt
+      └─ kotlin/
+         └─ com/mentor/helloUniverse/
+            ├─ GreetingServiceTDDTest.kt
+            └─ GreetingServiceBDDTest.kt
 ```
 
 ## TDD vs BDD: A Brief Introduction
@@ -71,7 +71,7 @@ Now, let's implement our code and tests using both approaches.
 This simple data class holds our greeting message and additional details:
 
 ```kotlin
-package com.myawesomeproject.hello_universe
+package com.mentor.helloUniverse
 
 data class Greeting(
     val message: String,
@@ -84,7 +84,7 @@ data class Greeting(
 Our service returns a greeting with a fixed message and details:
 
 ```kotlin
-package com.myawesomeproject.hello_universe
+package com.mentor.helloUniverse
 
 import org.springframework.stereotype.Service
 
@@ -111,7 +111,7 @@ class GreetingService {
 Traditional TDD tests focus on clear arrange-act-assert patterns:
 
 ```kotlin
-package com.myawesomeproject.hello_universe
+package com.mentor.helloUniverse
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -145,7 +145,7 @@ class GreetingServiceTDDTest {
 BDD tests use more descriptive language and often document user scenarios:
 
 ```kotlin
-package com.myawesomeproject.hello_universe
+package com.mentor.helloUniverse
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -161,19 +161,22 @@ class GreetingServiceBDDTest {
 
     @Test
     fun `Given a GreetingService, When the user requests a greeting, Then a "Hello, Universe" message with details is returned`() {
-        // Given
+        // given
         val service = GreetingService()
 
-        // When
+        // when
         val result = service.getGreeting()
 
-        // Then
+        // then
         assertThat(result.message).isEqualTo("Hello, Universe")
         assertThat(result.details["version"]).isEqualTo("1.0")
         assertThat(result.details["mode"]).isEqualTo("dev")
     }
 }
 ```
+
+The function name in this example is a bit verbose, and I would tend to be a little less descriptive, but this
+illustrates the functionality of a BDD test.
 
 **Key BDD Characteristics:**
 - Test name reads like a natural language sentence
@@ -187,7 +190,7 @@ class GreetingServiceBDDTest {
 Finally, let's expose our greeting through a REST endpoint:
 
 ```kotlin
-package com.myawesomeproject.hello_universe
+package com.mentor.helloUniverse
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
