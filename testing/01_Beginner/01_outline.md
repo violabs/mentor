@@ -88,4 +88,4 @@ exercises to reinforce your learning. Test after test, you’ll gain confidence 
 reliable applications that stand up to real-world challenges. Ready to get started? Let’s begin our journey 
 toward a more robust, maintainable codebase—one test at a time.
 
-[NEXT: Setup](02_setup.md)
+[NEXT: Setup](02_Setup/02_setup.md)
