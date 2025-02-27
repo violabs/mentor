@@ -17,7 +17,10 @@ project ready to test. Let's jump in!
 4. [Creating a Kotlin Spring Boot Project](#4-creating-a-kotlin-spring-boot-project)
     - [Using start.spring.io](#using-startspringio)
     - [Project Structure](#project-structure)
-5. [Next Steps](#5-next-steps)
+5. [Configuring Your Build File for Testing](#5-configuring-your-build-file-for-testing)
+    - [Adding MockK](#adding-mockk)
+    - [Adding SpringMockK](#adding-springmockk)
+6. [Next Steps](#6-next-steps)
 
 ---
 
@@ -172,7 +175,57 @@ helloUniverse/
 
 ---
 
-## 5. Next Steps 🔮
+## 5. Configuring Your Build File for Testing 🧪
+
+Now that we have our basic project set up, let's enhance it by adding some essential testing libraries that will make our testing journey much smoother. We'll focus on two powerful libraries for Kotlin testing in Spring Boot applications: **MockK** and **SpringMockK**.
+
+### Adding MockK 🎭
+
+MockK is a mocking library designed specifically for Kotlin. It provides first-class support for Kotlin features and is the preferred alternative to Mockito when working with Kotlin code.
+
+To add MockK to your project, update your **build.gradle.kts** file with the following dependency:
+
+```kotlin
+dependencies {
+    // Other dependencies
+    
+    // MockK for Kotlin-friendly mocking
+    testImplementation("io.mockk:mockk:1.13.10")
+}
+```
+
+MockK provides several advantages for Kotlin developers:
+- Native support for Kotlin features like coroutines, extension functions, and higher-order functions
+- Cleaner syntax specifically designed for Kotlin
+- More powerful capabilities for handling Kotlin-specific constructs
+
+### Adding SpringMockK 🍃
+
+SpringMockK is an integration library that brings MockK's capabilities into the Spring testing framework. It allows you to use MockK in place of Mockito in your Spring Boot tests with minimal configuration.
+
+Add SpringMockK to your **build.gradle.kts** file:
+
+```kotlin
+dependencies {
+    // Other dependencies and MockK
+    
+    // SpringMockK for Spring Boot integration with MockK
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+}
+```
+
+SpringMockK provides:
+- `@MockkBean` annotation as a replacement for Spring's `@MockBean`
+- `@SpykBean` annotation as a replacement for Spring's `@SpyBean`
+- Seamless integration with Spring's test context framework
+
+With these libraries added, you'll be ready to write more idiomatic Kotlin tests for your Spring Boot application. We'll explore how to use these libraries effectively in the upcoming sections on unit testing and Spring controller testing.
+
+> **Note**: The versions specified above (MockK 1.13.10 and SpringMockK 4.0.2) were the latest at the time of writing. Feel free to check for newer versions when setting up your project.
+
+---
+
+## 6. Next Steps 🔮
 
 At this point, you're set up to:
 1. Write and run **Kotlin code** in a Spring Boot app.
@@ -185,4 +238,4 @@ In the **next part** of this series, we'll dive deeper into **TDD and BDD Basics
 
 ---
 
-[← BACK: Introduction](../01_outline.md) | [NEXT: Unit Testing →](../03_TDD_BDD/03_tdd_bdd_basics.md)
+[← BACK: Introduction](../01_outline.md) | [NEXT: TDD & BDD Basics →](../03_TDD_BDD/03_tdd_bdd_basics.md)
