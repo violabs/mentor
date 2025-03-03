@@ -197,7 +197,7 @@ This starts the app up and if it starts successfully, the test will pass. First 
 
 We will make some updates to the project before we start working on it.
 
-We will do is to change the `application.properties` to `application.yml`. Click to 
+First we will change the `application.properties` to `application.yml`. Click to 
 rename the file and replace `.properties` with `.yml`. Then update the file to have:
 
 ```yaml
@@ -210,13 +210,13 @@ spring.application.name: helloUniverse
 
 Now that we have our basic project set up, let's enhance it by adding some essential testing libraries that will make our testing journey much smoother. We'll focus on two powerful libraries for Kotlin testing in Spring Boot applications: **MockK** and **SpringMockK**.
 
-Update the plugin version for kotlin to use 2.0.0. After ever change, reload gradle with IntelliJ or use
+Update the plugin version for kotlin to use 2.0.0. After every change, reload gradle with IntelliJ or use
 `./gradlew --refresh-dependencies` to manually update it.
 
 ```kotlin
 plugins {
-	kotlin("jvm") version "2.0.0"
-	kotlin("plugin.spring") version "2.0.0"
+    kotlin("jvm") version "2.0.0"
+    kotlin("plugin.spring") version "2.0.0"
 
     ...
 ```
@@ -286,7 +286,8 @@ springdoc:
     groups-order: asc
 ```
 
-This will give you a simple UI at `http://localhost:8080/swagger-ui.html`
+This will give you a simple UI at `http://localhost:8080/swagger-ui.html`. Run your app and go to this
+url, it should show content but you won't have any endpoints to access yet.
 
 #### Logging
 
