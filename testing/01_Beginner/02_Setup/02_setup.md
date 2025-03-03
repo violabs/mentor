@@ -128,7 +128,7 @@ code from `start.spring.io` into this new blank project.
 1. **Go to [start.spring.io](https://start.spring.io/)**
     - Under **Project**, select **Gradle Project**
     - Under **Language**, select **Kotlin**.
-    - Enter your **Group** (e.g., `com.myawesomeproject`). This reflects you company
+    - Enter your **Group** (e.g., `com.company.name`). This reflects you company
       - `<company/website_top_level_domain>.<company_name>.<optional_sub_project_details>`
       - If you do not have a site in mind, just use `com.mentor`
     - Enter your **Artifact** name (e.g., `helloUniverse`).
@@ -173,11 +173,53 @@ helloUniverse/
 > **Tip**: Make sure you see the Kotlin icon or Kotlin references in your **build.gradle.kts** file. 
 > IntelliJ might prompt you to **import** or **sync** the Gradle project if it detects changes.
 
+At this point, if you want to see if your project runs, you can do either:
+
+### Run Application
+
+```bash 
+./gradlew bootRun
+```
+
+You want to see `Started HelloUniverseApplicationKt in 0.535 seconds (process running for 0.649)`
+
+Make sure you stop the process to free up the port (default 8080) with `ctrl + c` in the command line.
+
+### Run Application Test (Integration)
+
+```bash 
+./gradlew test
+```
+
+This starts the app up and if it starts successfully, the test will pass. First automation! 🤖
+
+### Update for project
+
+We will make some updates to the project before we start working on it.
+
+We will do is to change the `application.properties` to `application.yml`. Click to 
+rename the file and replace `.properties` with `.yml`. Then update the file to have:
+
+```yaml
+spring.application.name: helloUniverse
+```
+
 ---
 
 ## 5. Configuring Your Build File for Testing 🧪
 
 Now that we have our basic project set up, let's enhance it by adding some essential testing libraries that will make our testing journey much smoother. We'll focus on two powerful libraries for Kotlin testing in Spring Boot applications: **MockK** and **SpringMockK**.
+
+Update the plugin version for kotlin to use 2.0.0. After ever change, reload gradle with IntelliJ or use
+`./gradlew --refresh-dependencies` to manually update it.
+
+```kotlin
+plugins {
+	kotlin("jvm") version "2.0.0"
+	kotlin("plugin.spring") version "2.0.0"
+
+    ...
+```
 
 ### Adding MockK 🎭
 
@@ -190,7 +232,7 @@ dependencies {
     // Other dependencies
     
     // MockK for Kotlin-friendly mocking
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("io.mockk:mockk:1.13.13")
 }
 ```
 
@@ -221,7 +263,42 @@ SpringMockK provides:
 
 With these libraries added, you'll be ready to write more idiomatic Kotlin tests for your Spring Boot application. We'll explore how to use these libraries effectively in the upcoming sections on unit testing and Spring controller testing.
 
-> **Note**: The versions specified above (MockK 1.13.10 and SpringMockK 4.0.2) were the latest at the time of writing. Feel free to check for newer versions when setting up your project.
+> **Note**: The versions specified above (MockK 1.13.13 and SpringMockK 4.0.2) were the latest at the time of writing. Feel free to check for newer versions when setting up your project.
+
+### Additional Libraries
+
+#### OpenAPI MVC
+
+We want to add easy API support so you do not have to use curl or postman. Add this to your `build.gradle.kts` dependencies:
+
+`implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")`
+
+After you do that, update the `application.yml` file.
+
+```
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    groups-order: asc
+```
+
+This will give you a simple UI at `http://localhost:8080/swagger-ui.html`
+
+#### Logging
+
+Add microutils logging for easy setup. Add this to your `build.gradle.kts` dependencies:
+
+`implementation("io.github.microutils:kotlin-logging:4.0.0-beta-2")`
+
+Then we will use it in any class by adding at the top:
+
+```kotlin
+private val logger = KLogging().logger
+```
 
 ---
 
@@ -235,6 +312,8 @@ At this point, you're set up to:
 In the **next part** of this series, we'll dive deeper into **TDD and BDD Basics**—showing you how both testing approaches can be applied to your Kotlin Spring Boot code. We'll explore the different philosophies and practical implementations.
 
 **Ready to dive in?** Let's move on to learning about test-driven and behavior-driven development!
+
+> ❕Remember to run your tests between each section to make sure things did not break!
 
 ---
 
