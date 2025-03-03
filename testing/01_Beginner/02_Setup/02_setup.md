@@ -11,7 +11,7 @@ project ready to test. Let's jump in!
 1. [Overview](#1-overview)
 2. [Prerequisites](#2-prerequisites)
 3. [Setting Up Your Environment](#3-setting-up-your-environment)
-    - [Java 17](#java-17)
+    - [Java 21](#java-21)
     - [Docker (or Colima)](#docker-or-colima)
     - [IDE (IntelliJ IDEA)](#ide-intellij-idea)
 4. [Creating a Kotlin Spring Boot Project](#4-creating-a-kotlin-spring-boot-project)
@@ -55,15 +55,15 @@ Before we dive into the setup, here are a few basic requirements we're assuming:
 
 ## 3. Setting Up Your Environment 💻
 
-### Java 17 ☕
-This series relies on **Java 17** (the current Long-Term Support release). We'll be using that as our base 
-JVM for Kotlin and Spring Boot. If you don't already have Java 17 installed:
+### Java 21 ☕
+This series relies on **Java 21**. We'll be using that as our base 
+JVM for Kotlin and Spring Boot. If you don't already have Java 21 installed:
 
 - **macOS/Linux**:
-    - Use SDKMAN, Homebrew, or your package manager of choice to install OpenJDK 17.
+    - Use SDKMAN, Homebrew, or your package manager of choice to install OpenJDK 21.
     - For example, on macOS with Homebrew:
       ```bash
-      brew install openjdk@17
+      brew install openjdk@21
       ```
     - Then, confirm installation:
       ```bash
@@ -72,7 +72,7 @@ JVM for Kotlin and Spring Boot. If you don't already have Java 17 installed:
 - **Windows**:
     - To Fill Out
 - **Further Setup**:
-    - If you need more guidance, we'll provide a separate tutorial on installing and configuring Java 17 in detail.
+    - If you need more guidance, we'll provide a separate tutorial on installing and configuring Java 21 in detail.
 
 ### Docker or Colima 🐳
 To run containers (for databases, microservices, etc.) later in the series, you'll want Docker or a Docker alternative:
