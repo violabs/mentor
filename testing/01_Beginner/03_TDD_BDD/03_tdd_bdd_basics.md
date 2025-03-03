@@ -20,7 +20,7 @@ We'll create:
 1. A **`GreetingService`** that provides greetings based on parameters
 2. A **`Greeting`** data class for our responses
 3. Several test classes demonstrating TDD, BDD, and mocking techniques
-4. A **`GreetingController`** to expose a `/hello` endpoint
+4. A **`GreetingController`** to expose a `/` endpoint
 
 ## Project Structure
 
@@ -54,6 +54,7 @@ TDD follows a cycle of:
 3. Refactor the code while keeping tests green
 
 TDD focuses on:
+
 - Small, incremental development steps
 - Testing technical functionality
 - Clear test outcomes (pass/fail)
@@ -62,6 +63,7 @@ TDD focuses on:
 ### Behavior-Driven Development (BDD)
 
 BDD extends TDD by:
+
 - Using natural language to describe tests
 - Focusing on user-visible behavior rather than implementation
 - Encouraging collaboration between developers, QA, and non-technical stakeholders
@@ -73,7 +75,8 @@ BDD tests help bridge the gap between technical implementation and business requ
 
 ### What is Mocking?
 
-**Mocking** is a technique where you create substitutes (or "mocks") for real objects that your code depends on. These mock objects:
+**Mocking** is a technique where you create substitutes (or "mocks") for real objects that your code depends on. These
+mock objects:
 
 - Simulate specific behaviors of real dependencies
 - Allow you to control the test environment
@@ -99,22 +102,37 @@ BDD tests help bridge the gap between technical implementation and business requ
 
 Now, let's implement our code and tests using both approaches.
 
+Typically, with TDD, you would create the failing test first, and then create the
+code to make that test pass (red, green, refactor).
+
+We will start by defining our first test. This will represent a simple self-contained
+unit test.
+
+> Some practices of TDD suggest writing the test first without these classes. If that style helps,
+> you can start with the test file below, and then fill it in after attempting to run the test.
+
+[Branch with code](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/01_initial_failing_test)
+
+> todo: add guide
+
+The initial requirement we get is that we always want a Greeting object.
+
 ### 1. Create the `Greeting` Class
 
-This simple data class holds our greeting message and additional details:
+This simple data class holds our greeting message and additional details. We will keep
+this open for now:
 
 ```kotlin
 package com.mentor.helloUniverse
 
 data class Greeting(
-    val message: String,
-    val details: Map<String, String> = emptyMap()
+    val message: String? = null
 )
 ```
 
-### 2. Create the `GreetingService`
+### 2. Create the `GreetingService` without Implementation
 
-Our service returns personalized greetings:
+Our service will return personalized greetings, for now add the empty values:
 
 ```kotlin
 package com.mentor.helloUniverse
@@ -123,228 +141,249 @@ import org.springframework.stereotype.Service
 
 @Service
 class GreetingService {
+    fun getGreeting(): Greeting? {
+        return null
+    }
+}
+```
 
-    // Additional details about our greeting
-    private val details = mapOf(
-        "version" to "1.0",
-        "mode" to "dev"
+### 3. Failing Test
+
+Now that we have the base items, we can write our failing test. We are going to
+start by just asserting it even exists.
+
+```kotlin
+package com.mentor.helloUniverse
+
+import org.junit.jupiter.api.Test
+
+class GreetingServiceTDDTest {
+    private val greetingService = GreetingService()
+
+    @Test
+    fun `getGreeting returns the greeting with default details if inputs not set`() {
+        // arrange
+        val expected = Greeting()
+
+        // act
+        val result = greetingService.getGreeting()
+
+        // assert
+        assert(result == expected) {
+            """
+                EXPECT: $expected
+                ACTUAL: $result
+            """.trimIndent()
+        }
+    }
+}
+```
+
+### 4. Test Resolution
+
+#### Run Failing Test
+
+You can utilize the runnable options within the IDE, or you can run them manually with `./gradlew test`.
+
+You should see the output of:
+
+```
+EXPECT: Greeting(message=null)
+ACTUAL: null
+java.lang.AssertionError: EXPECT: Greeting(message=null)
+ACTUAL: null
+	at com.mentor.helloUniverse.GreetingServiceTDDTest.getGreeting returns the greeting with default details if inputs not set(GreetingServiceTDDTest.kt:17)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+```
+
+#### Write code to pass test
+
+At this point you may try to make the test pass on its own. The solution below:
+
+```kotlin
+package com.mentor.helloUniverse
+
+import org.springframework.stereotype.Service
+
+@Service
+class GreetingService {
+    fun getGreeting(): Greeting? {
+        return Greeting()
+    }
+}
+```
+
+This should lead to the passing test.
+
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/02_initial_failing_test_fix)
+
+### 5. Add Additional Requirements
+
+We want to be able to add any name and have the greeting return as 'Hello, ' + word + '!'.
+If no input provided, we want to default it to 'Universe'.
+Additionally, we want to get details about our app. We will add a temp storage in the
+form of a `Map` to return metadata for our `Greeting` object. This metadata should have key of 'version' with '1.0'
+and 'mode' with value 'dev'.
+
+With these requirements we can update our tests to start with the case where we expect the default.
+
+#### Failed Tests
+
+```kotlin
+package com.mentor.helloUniverse
+
+import org.junit.jupiter.api.Test
+
+class GreetingServiceTDDTest {
+    private val greetingService = GreetingService()
+
+    @Test
+    fun `getGreeting returns the greeting with default details if inputs not set`() {
+        // arrange
+        val expected = Greeting(
+            message = "Hello, Universe!",
+            metadata = mapOf(
+                "version" to "1.0",
+                "mode" to "dev"
+            )
+        )
+
+        // act
+        val result = greetingService.getGreeting()
+
+        // assert
+        assert(result == expected) {
+            """
+                EXPECT: $expected
+                ACTUAL: $result
+            """.trimIndent()
+        }
+    }
+}
+```
+
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/03_additional_test_fail)
+
+#### Update the GreetingService
+
+You can try to get the tests to pass yourself. You can find a solution below:
+
+```kotlin
+package com.mentor.helloUniverse
+
+import org.springframework.stereotype.Service
+
+private val METADATA = mapOf(
+    "version" to "1.0",
+    "mode" to "dev"
+)
+
+@Service
+class GreetingService {
+    fun getGreeting(): Greeting? {
+        return Greeting(
+            message = "Hello, Universe!",
+            metadata = METADATA
+        )
+    }
+}
+```
+
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/04_additional_test_pass)
+
+### 6. Final test coverage
+
+The requirements state that we need to be able to add any custom name, so we will create a second test for now to cover
+that. We will need to modify the method signature of `getGreeting` and add that to the test.
+
+#### Failed Test
+
+##### Service File Update
+
+```kotlin
+    fun getGreeting(name: String? = null): Greeting? {
+    return Greeting(
+        message = "Hello, Universe!",
+        metadata = METADATA
+    )
+}
+```
+
+##### Test File Update
+
+```kotlin
+   ...
+
+@Test
+fun `getGreeting returns the greeting with custom name if inputs set`() {
+    // arrange
+    val expected = Greeting(
+        message = "Hello, World!",
+        metadata = mapOf(
+            "version" to "1.0",
+            "mode" to "dev"
+        )
     )
 
-    fun getGreeting(name: String = "Universe", mood: String = "neutral"): Greeting {
-        val message = when(mood) {
-            "happy" -> "Hello, Wonderful $name!"
-            "excited" -> "Hello, Amazing $name!"
-            "relaxed" -> "Hello, Peaceful $name!"
-            else -> "Hello, $name!"
-        }
-        
-        return Greeting(
-            message = message,
-            details = details + ("mood" to mood)
-        )
+    // act
+    val result = greetingService.getGreeting(name = "World")
+
+    // assert
+    assert(result == expected) {
+        """
+                EXPECT: $expected
+                ACTUAL: $result
+            """.trimIndent()
     }
 }
+
+...
 ```
 
-### 3. Create a Controller
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/05_final_test_fail)
 
-Let's expose our greeting through a REST endpoint:
+#### Updating code to pass test
+
+We can update the service to do this:
 
 ```kotlin
-package com.mentor.helloUniverse
-
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-
-@RestController
-class GreetingController(
-    private val greetingService: GreetingService
-) {
-    @GetMapping("/hello")
-    fun getGreeting(
-        @RequestParam(required = false, defaultValue = "Universe") name: String,
-        @RequestParam(required = false, defaultValue = "neutral") mood: String
-    ): Greeting {
-        return greetingService.getGreeting(name, mood)
-    }
+    fun getGreeting(name: String? = null): Greeting? {
+    return Greeting(
+        message = "Hello, $name!",
+        metadata = METADATA
+    )
 }
 ```
 
-## Setting Up MockK in Your Project
-
-To use MockK for mocking in your tests, add these dependencies to your `build.gradle.kts` file:
+If you run `./gradlew test` you will see that our new test passes! But then we also see that our first test
+fails. The code above removed the default! So we must modify the signature. On top of reducing the scope
+of our nullability, we can apply that to the response, since we ALWAYS return the `Greeting` object.
 
 ```kotlin
-dependencies {
-    // Existing Spring Boot dependencies...
-    
-    // MockK
-    testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("com.ninja-squad:springmockk:4.0.2")
-    
-    // For BDD-style assertions
-    testImplementation("org.assertj:assertj-core:3.25.3")
+    fun getGreeting(name: String = "Universe"): Greeting {
+    return Greeting(
+        message = "Hello, $name!",
+        metadata = METADATA
+    )
 }
 ```
 
-## TDD-Style Test with MockK
+We can run the `./gradlew test` again and all of the test should pass!
 
-Here's how we test the `GreetingController` using TDD and mocking the `GreetingService` with MockK:
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/05_final_test_pass)
 
-```kotlin
-package com.mentor.helloUniverse
+---
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
+## Testing with Mocks and Spies
 
-class GreetingControllerTDDTest {
-
-    private val greetingService = mockk<GreetingService>()
-    private val controller = GreetingController(greetingService)
-    private val mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
-
-    @Test
-    fun shouldReturnGreetingFromService() {
-        // Arrange
-        val greeting = Greeting(
-            message = "Hello, Test Universe!",
-            details = mapOf("version" to "1.0", "mood" to "happy")
-        )
-        every { greetingService.getGreeting(any(), any()) } returns greeting
-
-        // Act & Assert
-        mockMvc.perform(
-            get("/hello")
-                .param("name", "Test Universe")
-                .param("mood", "happy")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.message").value("Hello, Test Universe!"))
-            .andExpect(jsonPath("$.details.version").value("1.0"))
-            .andExpect(jsonPath("$.details.mood").value("happy"))
-
-        // Verify that the service was called with the right parameters
-        verify { greetingService.getGreeting("Test Universe", "happy") }
-    }
-}
-```
-
-## BDD-Style Test with MockK
-
-BDD tests can also use MockK, but with more descriptive language:
-
-```kotlin
-package com.mentor.helloUniverse
-
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-
-class GreetingServiceBDDTest {
-
-    /*
-     Feature: Personalized Greeting
-       In order to feel welcomed appropriately,
-       As a user,
-       I want to receive a customized greeting that reflects my mood.
-    */
-
-    @Test
-    fun `Given a user is happy, When requesting a greeting, Then a happy greeting is returned`() {
-        // Given
-        val greetingService = GreetingService()
-
-        // When
-        val result = greetingService.getGreeting(name = "Universe", mood = "happy")
-
-        // Then
-        assertThat(result.message).isEqualTo("Hello, Wonderful Universe!")
-        assertThat(result.details["mood"]).isEqualTo("happy")
-    }
-
-    @Test
-    fun `Given a user is relaxed, When requesting a greeting, Then a peaceful greeting is returned`() {
-        // Given
-        val greetingService = GreetingService()
-
-        // When
-        val result = greetingService.getGreeting(name = "Universe", mood = "relaxed")
-
-        // Then
-        assertThat(result.message).isEqualTo("Hello, Peaceful Universe!")
-        assertThat(result.details["mood"]).isEqualTo("relaxed")
-    }
-}
-```
-
-## Spring Integration Test with SpringMockK
-
-For testing the complete integration with Spring's testing framework:
-
-```kotlin
-package com.mentor.helloUniverse
-
-import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
-import io.mockk.verify
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-
-@WebMvcTest(GreetingController::class)
-class GreetingControllerSpringTest {
-
-    @Autowired
-    lateinit var mockMvc: MockMvc
-
-    @MockkBean
-    lateinit var greetingService: GreetingService
-
-    @Test
-    fun shouldReturnGreetingFromService() {
-        // Arrange
-        val greeting = Greeting(
-            message = "Hello, Spring Universe!",
-            details = mapOf("version" to "1.0", "mood" to "excited")
-        )
-        every { greetingService.getGreeting(any(), any()) } returns greeting
-
-        // Act & Assert
-        mockMvc.perform(
-            get("/hello")
-                .param("name", "Spring Universe")
-                .param("mood", "excited")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.message").value("Hello, Spring Universe!"))
-            .andExpect(jsonPath("$.details.version").value("1.0"))
-            .andExpect(jsonPath("$.details.mood").value("excited"))
-
-        // Verify that the service was called with the right parameters
-        verify { greetingService.getGreeting("Spring Universe", "excited") }
-    }
-}
-```
+WORK IN PROGRESS
 
 ## The Differences Between MockK and Mockito
 
-While Mockito is the most popular Java mocking library, MockK is designed specifically for Kotlin and offers several advantages:
+While Mockito is the most popular Java mocking library, MockK is designed specifically for Kotlin and offers several
+advantages:
 
 ### MockK Advantages:
 
@@ -355,13 +394,13 @@ While Mockito is the most popular Java mocking library, MockK is designed specif
 
 ### Key MockK Syntax:
 
-| Operation | Mockito | MockK |
-|-----------|---------|-------|
-| Create a mock | `mock(Class)` | `mockk<Class>()` |
-| Define behavior | `when(x.method()).thenReturn(value)` | `every { x.method() } returns value` |
-| Verify calls | `verify(x).method()` | `verify { x.method() }` |
-| Argument matchers | `any()` | `any()` |
-| Relaxed mocks | `mock(Class, RETURNS_DEFAULTS)` | `mockk<Class>(relaxed = true)` |
+| Operation         | Mockito                              | MockK                                |
+|-------------------|--------------------------------------|--------------------------------------|
+| Create a mock     | `mock(Class)`                        | `mockk<Class>()`                     |
+| Define behavior   | `when(x.method()).thenReturn(value)` | `every { x.method() } returns value` |
+| Verify calls      | `verify(x).method()`                 | `verify { x.method() }`              |
+| Argument matchers | `any()`                              | `any()`                              |
+| Relaxed mocks     | `mock(Class, RETURNS_DEFAULTS)`      | `mockk<Class>(relaxed = true)`       |
 
 ## Breaking and Fixing Tests
 
@@ -369,16 +408,14 @@ A key benefit of automated tests is detecting when changes break expected behavi
 
 1. **Change the Service**:
    ```kotlin
-   // Update the GreetingService's message for happy mood
-   val message = when(mood) {
-       "happy" -> "Hello, Fantastic $name!" // Changed from "Hello, Wonderful $name!"
-       "excited" -> "Hello, Amazing $name!"
-       // ...
-   }
+   private val METADATA = mapOf(
+       "version" to "2.0",
+       "mode" to "dev"
+   )
    ```
 
 2. **Run the Tests**:
-   The tests expecting "Hello, Wonderful Universe!" will now fail
+   The tests expecting version "1.0" will fail
 
 3. **Fix the Tests**:
    Update the test expectations to match the new message
@@ -417,3 +454,36 @@ In future guides, we'll explore:
 5. Advanced testing patterns
 
 [← BACK: Introduction](../01_outline.md) | [NEXT: Testing Spring Controllers →](/testing/01_Beginner/04_Spring_Controllers/04_testing_controllers.md)
+
+```kotlin
+```kotlin
+package com.mentor.helloUniverse
+
+import org . springframework . stereotype . Service
+
+    @Service
+    class GreetingService {
+
+        // Additional details about our greeting
+        private val details = mapOf(
+            "version" to "1.0",
+            "mode" to "dev"
+        )
+
+        fun getGreeting(name: String = "Universe", mood: String = "neutral"): Greeting {
+            val message = when (mood) {
+                "happy" -> "Hello, Wonderful $name!"
+                "excited" -> "Hello, Amazing $name!"
+                "relaxed" -> "Hello, Peaceful $name!"
+                else -> "Hello, $name!"
+            }
+
+            return Greeting(
+                message = message,
+                details = details + ("mood" to mood)
+            )
+        }
+    }
+```
+
+```
