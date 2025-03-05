@@ -376,6 +376,293 @@ We can run the `./gradlew test` again and all of the test should pass!
 
 ---
 
+## Behavior Driven Development
+
+We can enhance the way we code by focusing on the behavior. Instead of `arrange`, `act`, `assert`, it can
+prove more helpful to think of it as `given`, `when`, `then`. We can modify the tests to reflect this using
+Kotlin's extensibility.
+
+Add the following to the same level as your test classes called `TestStyle.kt`
+
+```kotlin
+package com.mentor.helloUniverse
+
+object TestStyle {
+    fun tdd(tddScope: TDD.() -> Unit) {
+        TDD().tddScope()
+    }
+
+    fun bdd(bddScope: BDD.() -> Unit) {
+        BDD().bddScope()
+    }
+
+    /**
+     * use AAA - not specific to TDD
+     */
+    class TDD {
+        fun arrange(arrangeScope: Arrange.() -> Unit) {
+            Arrange().arrangeScope()
+        }
+
+        class Arrange {
+            fun act(actScope: Act.() -> Unit) {
+                Act().actScope()
+            }
+        }
+
+        class Act() {
+            fun assertion(assertScope: () -> Unit) {
+                assertScope()
+            }
+        }
+    }
+
+    class BDD {
+        fun given(givenScope: Given.() -> Unit) {
+            Given().givenScope()
+        }
+
+        class Given {
+            fun whenever(whenScope: When.() -> Unit) {
+                When().whenScope()
+            }
+        }
+
+        class When {
+            fun then(thenScope: () -> Unit) {
+                thenScope()
+            }
+        }
+    }
+}
+```
+
+See the code for a more detailed explanation of this class. For now you just need to know,
+we can use it to wrap our sections in a scope, or a block of execution. We can then change
+our test code to look like:
+
+```kotlin
+class GreetingServiceTDDTest {
+    private val greetingService = GreetingService()
+
+    @Test
+    fun `getGreeting returns the greeting with default details if inputs not set`() = TestStyle.tdd {
+        arrange {
+            val expected = Greeting(
+                message = "Hello, Universe!",
+                metadata = mapOf(
+                    "version" to "1.0",
+                    "mode" to "dev"
+                )
+            )
+
+            act {
+                val result = greetingService.getGreeting()
+
+                assertion {
+                    // assert
+                    assert(result == expected) {
+                        """
+                            EXPECT: $expected
+                            ACTUAL: $result
+                        """.trimIndent()
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `getGreeting returns the greeting with custom name if inputs set`() = TestStyle.tdd {
+        arrange {
+            val expected = Greeting(
+                message = "Hello, World!",
+                metadata = mapOf(
+                    "version" to "1.0",
+                    "mode" to "dev"
+                )
+            )
+
+            act {
+                val result = greetingService.getGreeting(name = "World")
+
+                assertion {
+                    // assert
+                    assert(result == expected) {
+                        """
+                        EXPECT: $expected
+                        ACTUAL: $result
+                        """.trimIndent()
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+You can see how each section is nested inside the other block. We use `assertion` instead of `assert` since
+that is already used for the actual check.
+
+Now that we have this example, we can copy the code into a new test file `GreetingServiceBDDTest.kt` at the same
+level of our TDD one. Then we can just modify the code to use the BDD way.
+
+```kotlin
+package com.mentor.helloUniverse
+
+import org.junit.jupiter.api.Test
+
+class GreetingServiceBDDTest {
+    private val greetingService = GreetingService()
+
+   @Test
+   fun `getGreeting returns the greeting with default details if inputs not set`() = TestStyle.bdd {
+      given {
+         whenever {
+            val result = greetingService.getGreeting()
+
+            then {
+               val expected = Greeting(
+                  message = "Hello, Universe!",
+                  metadata = mapOf(
+                     "version" to "1.0",
+                     "mode" to "dev"
+                  )
+               )
+
+               assert(result == expected) {
+                  """
+                      EXPECT: $expected
+                      ACTUAL: $result
+                  """.trimIndent()
+               }
+            }
+         }
+      }
+   }
+
+   @Test
+   fun `getGreeting returns the greeting with custom name if inputs set`() = TestStyle.bdd {
+      given {
+         whenever {
+            val result = greetingService.getGreeting(name = "World")
+
+            then {
+               val expected = Greeting(
+                  message = "Hello, World!",
+                  metadata = mapOf(
+                     "version" to "1.0",
+                     "mode" to "dev"
+                  )
+               )
+
+               assert(result == expected) {
+                  """
+                  EXPECT: $expected
+                  ACTUAL: $result
+                  """.trimIndent()
+               }
+            }
+         }
+      }
+   }
+}
+```
+
+> Note. We will use `whenever` since `when` is a keyword.
+
+While it has a similar setup to the TDD setup, we can modify it a bit to add additional clarity and context. For this,
+we will modify the `TestStyle` class.
+
+```kotlin
+   class BDD {
+      fun given(details: String, givenScope: Given.() -> Unit) {
+         println("given $details")
+         Given().givenScope()
+      }
+   
+      class Given {
+         fun whenever(details: String, whenScope: When.() -> Unit) {
+            println("when $details")
+            When().whenScope()
+         }
+      }
+   
+      class When {
+         fun then(details: String, thenScope: () -> Unit) {
+            println("then $details")
+            thenScope()
+         }
+      }
+   }
+```
+
+Then we can add details to the tests:
+
+```kotlin
+    @Test
+    fun `getGreeting returns the greeting with default details if inputs not set`() = TestStyle.bdd {
+      given("a request without a name") {
+         whenever("we call for a greeting") {
+            val result = greetingService.getGreeting()
+
+            then("expect default 'Hello Universe!' with metadata") {
+               val expected = Greeting(
+                  message = "Hello, Universe!",
+                  metadata = mapOf(
+                     "version" to "1.0",
+                     "mode" to "dev"
+                  )
+               )
+
+               assert(result == expected) {
+                  """
+                      EXPECT: $expected
+                      ACTUAL: $result
+                  """.trimIndent()
+               }
+            }
+         }
+      }
+   }
+
+   @Test
+   fun `getGreeting returns the greeting with custom name if inputs set`() = TestStyle.bdd {
+      given("a request with a name 'World'") {
+         whenever("we call for a greeting") {
+            val result = greetingService.getGreeting(name = "World")
+   
+            then("expect returned 'Hello World!' with metadata") {
+               val expected = Greeting(
+                  message = "Hello, World!",
+                  metadata = mapOf(
+                     "version" to "1.0",
+                     "mode" to "dev"
+                  )
+               )
+   
+               assert(result == expected) {
+                  """
+                  EXPECT: $expected
+                  ACTUAL: $result
+                  """.trimIndent()
+               }
+            }
+         }
+      }
+   }
+```
+
+As you can see, we added context messages to help inform others working on the code, what the purpose
+of this test is. Remember, tests are ways to inform others on the functionality, so think about how
+you want to communicate that to future developers!
+
+Run your tests and you should be able to see it print out these messages within that specific test.
+
+[Branch Code Reference](https://github.com/violabs/mentor-code/tree/beginner/testing/tdd/07_tdd_bdd_example)
+
+---
+
 ## Testing with Mocks and Spies
 
 WORK IN PROGRESS
