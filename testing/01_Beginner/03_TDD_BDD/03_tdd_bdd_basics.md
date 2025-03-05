@@ -304,17 +304,17 @@ that. We will need to modify the method signature of `getGreeting` and add that 
 
 ```kotlin
     fun getGreeting(name: String? = null): Greeting? {
-    return Greeting(
-        message = "Hello, Universe!",
-        metadata = METADATA
-    )
-}
+       return Greeting(
+           message = "Hello, Universe!",
+           metadata = METADATA
+       )
+   }
 ```
 
 ##### Test File Update
 
 ```kotlin
-   ...
+...
 
 @Test
 fun `getGreeting returns the greeting with custom name if inputs set`() {
@@ -333,9 +333,9 @@ fun `getGreeting returns the greeting with custom name if inputs set`() {
     // assert
     assert(result == expected) {
         """
-                EXPECT: $expected
-                ACTUAL: $result
-            """.trimIndent()
+            EXPECT: $expected
+            ACTUAL: $result
+        """.trimIndent()
     }
 }
 
@@ -350,11 +350,11 @@ We can update the service to do this:
 
 ```kotlin
     fun getGreeting(name: String? = null): Greeting? {
-    return Greeting(
-        message = "Hello, $name!",
-        metadata = METADATA
-    )
-}
+       return Greeting(
+           message = "Hello, $name!",
+           metadata = METADATA
+       )
+   }
 ```
 
 If you run `./gradlew test` you will see that our new test passes! But then we also see that our first test
@@ -363,11 +363,11 @@ of our nullability, we can apply that to the response, since we ALWAYS return th
 
 ```kotlin
     fun getGreeting(name: String = "Universe"): Greeting {
-    return Greeting(
-        message = "Hello, $name!",
-        metadata = METADATA
-    )
-}
+       return Greeting(
+           message = "Hello, $name!",
+           metadata = METADATA
+       )
+   }
 ```
 
 We can run the `./gradlew test` again and all of the test should pass!
@@ -543,9 +543,11 @@ class GreetingServiceBDDTest {
 
    @Test
    fun `getGreeting returns the greeting with custom name if inputs set`() = TestStyle.bdd {
-      given {
+      given {   
+         val name = "World"
+         
          whenever {
-            val result = greetingService.getGreeting(name = "World")
+            val result = greetingService.getGreeting(name = name)
 
             then {
                val expected = Greeting(
@@ -629,8 +631,10 @@ Then we can add details to the tests:
    @Test
    fun `getGreeting returns the greeting with custom name if inputs set`() = TestStyle.bdd {
       given("a request with a name 'World'") {
+         val name = "World"
+         
          whenever("we call for a greeting") {
-            val result = greetingService.getGreeting(name = "World")
+            val result = greetingService.getGreeting(name = name)
    
             then("expect returned 'Hello World!' with metadata") {
                val expected = Greeting(
